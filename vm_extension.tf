@@ -248,7 +248,7 @@ resource "azapi_resource" "dcr_association" {
   }
 }
 
-
+/*
 resource "azurerm_virtual_machine_extension" "domjoin" {
 name = "domjoin"
 virtual_machine_id = var.MD_VIRTUAL_MACHINE_ID
@@ -277,5 +277,5 @@ lifecycle {
      ]
   }
 }
-
+*/
 
