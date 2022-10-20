@@ -10,82 +10,6 @@ terraform {
 
 
 
-/*
-
-
-
- resource "azurerm_virtual_machine_extension" "VMDiagnosticsSettings" {
- #esiste policy ma non abilita l'interno delle vm
- 
-  name                 = "DiagnosticSettings"
-  virtual_machine_id         = var.MD_VIRTUAL_MACHINE_ID
-  publisher                  = "Microsoft.Azure.Diagnostics"
-  type                       = "IaaSDiagnostics"
-  type_handler_version       = "1.5"
-  # get handler version  -> az vm extension image list --location germanywestcentral -o table | grep "Microsoft.Azure.Diagnostics"
-  auto_upgrade_minor_version = "true"
-  settings = <<SETTINGS
-    {
-      "StorageAccount": "${var.MD_DIAG_STORAGE_ACCOUNT}",
-      "WadCfg": {
-                        "DiagnosticMonitorConfiguration": {
-                            "overallQuotaInMB": 5120,
-                            "Metrics": {
-                                "resourceId": "${var.MD_VIRTUAL_MACHINE_ID}",
-                                "MetricAggregation": [
-                                    {
-                                        "scheduledTransferPeriod": "PT1H",
-                                         "sinks": "AzureMonitor"
-                                    },
-                                    {
-                                        "scheduledTransferPeriod": "PT1M",
-                                         "sinks": "AzureMonitor"
-                                    }
-                                ]
-                            },
-                            "DiagnosticInfrastructureLogs": {
-                                "scheduledTransferLogLevelFilter": "Error",
-                                "scheduledTransferPeriod": "PT1M"
-                            },
-                            "PerformanceCounters": ${file("${path.module}/Windows_diag_config.json")}, 
-                            "SinksConfig": {
-                                "Sink": [
-                                    {
-                                        "AzureMonitor": {},
-                                        "name": "AzureMonitor"
-                                    }
-                                ]
-                            },
-                            "WindowsEventLog": ${file("${path.module}/Windows_diag_evt.json")},
-                            "Directories": {
-                                "scheduledTransferPeriod": "PT1M"
-                            }
-                        },
-                        "SinksConfig": {
-                            "Sink": [
-                                {
-                                    "AzureMonitor": {},
-                                    "name": "AzureMonitor"
-                                }
-                            ]
-                        }
-                 }
-                
-              
-    }
-    
-  SETTINGS
-
-protected_settings = <<PROTECTED_SETTINGS
-   {
-    "storageAccountName": "${var.MD_DIAG_STORAGE_ACCOUNT}"
-     }
-
-  PROTECTED_SETTINGS
-
-   }
-  
-*/
 
 resource "azurerm_virtual_machine_extension" "VMperfomancediag" {
    
@@ -123,11 +47,7 @@ SETTINGS
          }
 SETTINGS
 
-      lifecycle {
-            ignore_changes = [
-             tags
-            ]
-      }
+      tags = var.MD_ALL_TAGS 
  
    }
   
@@ -147,11 +67,7 @@ resource "azurerm_virtual_machine_extension" "admincenter" {
                         "port": 6519                        
    }
   SETTINGS 
-  lifecycle {
-    ignore_changes = [
-     tags
-    ]
-  }
+  tags = var.MD_ALL_TAGS 
 }
 
 resource "azurerm_virtual_machine_extension" "NetworkWatcker" {
@@ -161,11 +77,7 @@ resource "azurerm_virtual_machine_extension" "NetworkWatcker" {
   publisher                  = "Microsoft.Azure.NetworkWatcher"
   type                       = "NetworkWatcherAgentWindows"
   type_handler_version       = "1.4"
-  lifecycle {
-    ignore_changes = [
-     tags
-    ]
-  }
+  tags = var.MD_ALL_TAGS 
 }
 
 # Dependency Agent for Windows
@@ -177,11 +89,7 @@ resource "azurerm_virtual_machine_extension" "da" {
   type_handler_version       = "9.0"
   auto_upgrade_minor_version = true
  ## Get version -> az vm extension image list --location germanywestcentral -o table | findstr "Microsoft.Azure.Monitoring.DependencyAgent"
-  lifecycle {
-      ignore_changes = [
-      tags
-    ]
-  }
+ tags = var.MD_ALL_TAGS 
 }
 
 resource "azurerm_virtual_machine_extension" "vm_insights" {
@@ -204,11 +112,7 @@ resource "azurerm_virtual_machine_extension" "vm_insights" {
     }
  PROTECTED_SETTINGS
 
- lifecycle {
-    ignore_changes = [
-     tags
-    ]
-  }
+ tags = var.MD_ALL_TAGS 
 
 }
 
@@ -223,11 +127,7 @@ resource "azurerm_virtual_machine_extension" "ama" {
   type_handler_version       = "1.3"
   auto_upgrade_minor_version = "true"
   automatic_upgrade_enabled  = "true"
-  lifecycle {
-    ignore_changes = [
-     tags
-    ]
-  }
+  tags = var.MD_ALL_TAGS 
 }
 
 
@@ -241,41 +141,7 @@ resource "azapi_resource" "dcr_association" {
       dataCollectionRuleId = var.MD_DCR_ID
     }
   })
-  lifecycle {
-    ignore_changes = [
-     tags
-    ]
-  }
+  
 }
 
-/*
-resource "azurerm_virtual_machine_extension" "domjoin" {
-name = "domjoin"
-virtual_machine_id = var.MD_VIRTUAL_MACHINE_ID
-publisher = "Microsoft.Compute"
-type = "JsonADDomainExtension"
-type_handler_version = "1.3"
-settings = <<SETTINGS
-    {
-    "Name": "w3cp.windtre.it",
-    "User": "${var.MD_USERNAME}",
-    "OUPath": "OU=${var.MD_PROJECT_NAME},${var.MD_DOMAIN_LDAP}",
-    "Restart": "true",
-    "Options": "3"
-      
-    }
-SETTINGS
-    protected_settings = <<PROTECTED_SETTINGS
-    {
-            "Password": "${var.MD_USERPWD}"
-    }
-PROTECTED_SETTINGS
-lifecycle {
-    ignore_changes = [
-     tags,
-     protected_settings
-     ]
-  }
-}
-*/
 
